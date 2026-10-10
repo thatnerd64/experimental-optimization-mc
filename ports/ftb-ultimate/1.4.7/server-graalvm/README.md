@@ -9,7 +9,8 @@ relative to their own location and use `JDK8_HOME` and `GRAALVM_HOME` for tools.
 
 A precompiled Linux x86_64 bundle and checksum are available in the
 [GitHub Release](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/ftb-ultimate-1.1.2-graalvm-v1).
-See the [port card](../server-graalvm.md#download-and-run) for installation.
+See the [port card](../server-graalvm.md#download-and-run) for installation, or use the repo's
+[`install.sh`](../../../../install.sh) or [shared Pelican egg](../../../../pelican/egg-graalvm-native-1.4.7.json).
 
 ## Inputs and tools
 
