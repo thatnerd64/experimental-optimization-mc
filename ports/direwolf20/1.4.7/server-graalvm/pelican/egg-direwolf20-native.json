@@ -2,7 +2,7 @@
     "_comment": "Direwolf20 1.4.7 - GraalVM native image (draft, not yet imported)",
     "meta": { "version": "PTDL_v2", "update_url": null },
     "name": "Direwolf20 1.4.7 (GraalVM native)",
-    "author": "lucaswan348@gmail.com",
+    "author": "thatnerd64",
     "description": "FTB Direwolf20 5.3.2 (Minecraft 1.4.7, Forge) server compiled ahead of time with GraalVM native-image. No JVM.",
     "features": [],
     "docker_images": { "Debian 12 (yolks)": "ghcr.io/parkervcp/yolks:debian" },

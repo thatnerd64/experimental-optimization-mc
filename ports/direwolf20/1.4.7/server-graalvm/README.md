@@ -1,82 +1,127 @@
-# Direwolf20 1.4.7 server → GraalVM native image
+# Direwolf20 1.4.7 native server (reference port)
 
-The dedicated server of the FTB **Direwolf20 5.3.2** pack (Minecraft 1.4.7, Forge 6.6.2.534 / FML 4.7.35, 42 server-side
-mods) compiled ahead of time into one native Linux executable. It is a drop-in replacement for
-`java -jar server.jar nogui`: same world format, same network protocol (51), same `server.properties`, `mods/`,
-`coremods/`, `lib/`, `config/` layout. `server.jar` is not needed at runtime.
+Minecraft 1.4.7, Forge 6.6.2.534 (FML 4.7.35), Linux x86_64. FTB Direwolf20 5.3.2, 42 server-side mods.
+This is the reference implementation; the
+[FTB Ultimate port](https://github.com/thatnerd64/experimental-optimization-mc/tree/main/ports/ftb-ultimate/1.4.7/server-graalvm)
+is derived from it.
 
-Built on a remote x86-64 build host. The scripts assume the work dir `/root/dw20-server` and a JDK 8 and GraalVM layout under
-`/root/build1710-tools` and `/opt/graalvm`; deliverable `dist/dw20-native/` (`./start.sh`, heap via `DW20_HEAP=3g`).
+The server is a drop-in replacement for `java -jar server.jar nogui`: same world format, protocol 51 and
+`server.properties`, `mods/`, `coremods/`, `lib/`, `config/` layout. `server.jar` is not needed at runtime.
 
-## Measured (same seed, same bot, fresh world each; 120 s of continuous flight ≈ 2,270 blocks of newly generated terrain)
+Run commands below from this source directory. Scripts locate the workspace relative to their own location and use
+`JDK8_HOME` and `GRAALVM_HOME` for tools.
 
-| | boot to "Done" | RSS idle → after | threads | CPU: boot | CPU: 120 s flight | world data served |
-|---|---|---|---|---|---|---|
-| JDK 8, stock FML (baseline) | 20.6 s | 1342 → 1514 MB | 65 | 55.8 s | 89.7 s | 11.75 MB |
-| closed-world jar on JDK 21 | 12.6 s | 716 → 841 MB | 70 | 55.5 s | 104.0 s | 11.77 MB |
-| **native image (-O2)** | **9.1 s** | **299 → 427 MB** | **15** | **8.6 s** | **68.6 s** | **11.80 MB** |
+A precompiled Linux x86_64 bundle and checksum are attached to the
+[GitHub Release](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/direwolf20-5.3.2-graalvm-v1).
+See the [port card](../server-graalvm.md#download-and-run) for installation and
+[`RUNTIME.md`](RUNTIME.md) for launch details.
 
-Caveats: a 2-minute run; HotSpot's JIT cost amortises over a long uptime, so expect the CPU gap to narrow on long runs
-(memory and startup advantages stay). Error/warning lines in the logs are identical to the baseline's.
-Verified: all 67 mod containers activate identically; a world created by the stock JDK 8 server (with Twilight Forest,
-Mystcraft, EnderStorage data) loads and serves; FML handshake + encrypted login + chunk streaming with a protocol-51 bot.
-Not verified: long soak (hours), real gameplay of every mod (machines, pipes, turtles...), multiple players.
+## Inputs and tools
 
-## Pipeline
+- Direwolf20 5.3.2 `mods/`, `coremods/`, `lib/`, `config/` (the pack's `overrides`, plus the five projects its manifest
+  lists, which the pack zip does not contain).
+- `base-server.jar`: the vanilla 1.4.7 `server.jar` merged with the Forge 6.6.2.534 universal zip, with `META-INF` removed.
+- JDK 8: runs the real FML transformers and the enum recording.
+- Oracle GraalVM 21.0.12 with native-image; GCC.
+- Python 3.11 or later, tar, shell.
+
+The jars and the original pack archive are private build inputs, not part of this source tree. Runtime mod jars stay
+necessary for Forge discovery and mod resources, even though the executable code is compiled into the native image.
+
+## Build sequence
+
+Prepare `base/` from the pack: `mods/`, `coremods/`, `lib/`, `config/`, and a test `server.properties` bound to
+`127.0.0.1:25591` with `online-mode=false` and `allow-flight=true`. Client-only mods (Rei's Minimap, Inventory Tweaks)
+must not be in `base/mods`; they crash a dedicated server on stock FML too.
+
+```sh
+export JDK8_HOME=/path/to/jdk8
+export GRAALVM_HOME=/path/to/graalvm
+mkdir -p aotwork/game
+cp -a base/mods base/coremods base/lib base/config aotwork/game/
+python3 runstage.py base
+OUT=out-rec JOPTS=-Dretro.enums.record=true bash scripts/aotbuild.sh
+OUT=out-rec bash scripts/buildglue.sh
+# Keep the supplied recording for reference; EnumLog appends to its output.
+mv enum-additions.txt enum-additions.reference.txt
+python3 runstage.py record
+JOPTS="-Dretro.enums.file=$PWD/enum-additions.txt" bash scripts/aotbuild.sh
+bash scripts/buildglue.sh
+python3 runstage.py agent
+bash scripts/nibuild.sh
+python3 runstage.py native --flight --seconds 120
+python3 runstage.py native --name native-stock-world --world-from checks/base/world
+python3 package.py
+python3 runstage.py native --name packaged --bundle dist/dw20-native --seconds 10
+```
+
+`runstage.py` intentionally refuses to reuse a test directory; pass `--name` with a new name to repeat a check. Each run
+shuts down its own process after testing; logs and test worlds remain under `checks/`.
+`scripts/bench.sh base|aot|native [seconds]` repeats the same flight against the stock server, the transformed jar on
+GraalVM's JVM, and the native binary, and prints boot time, memory, threads and CPU.
+
+`scripts/nibuild.sh` selects `-O2 -march=compatibility`, uses a 64 GB builder heap and stops on tool failures.
+`package.py` creates `dist/dw20-native/` plus `dw20-native-linux-x86_64.tar.gz` and its SHA-256 checksum.
+`jar-policy.properties` permits the legacy SHA-1 jar signatures that current Java 8 treats as unsigned; it is passed only
+to the build and test JVMs. The pack jars, native executable, generated metadata and test worlds are not distributed
+in this source repository.
+
+## How it works
 
 ```
-vanilla server.jar + forge universal ──► base-server.jar
-                                           │
- aot/ServerAot.java  (JDK 8, real FML relaunch chain, side=SERVER, all coremods + access transformers + SideTransformer)
- aot/Patches.java    (ASM fixes, below)
-                                           ▼
-        aotwork/out/classes.jar   (13,739 post-transform classes; 230 @SideOnly(CLIENT) classes dropped)
-        aotwork/out/resources.jar (non-class resources + retro/origins.txt)
-                                           │  + glue/ (RelaunchClassLoader stub, ModClassLoader, FMLRelauncher,
-                                           │           ASMEventHandler, ServerBoot main, Enums, Origin)
-                                           ▼
-   Loadable.java → stubs.py → prune.py → genconfig.py → native-image (GraalVM 21.0.12, scripts/nibuild.sh)
+base-server.jar + pack jars
+        │  aot/ServerAot.java   JDK 8, the real FML relaunch chain with side=SERVER: coremods, access transformers,
+        │  aot/Patches.java     @SideOnly stripping. Dumps every class AFTER transformation; ASM fixes below.
+        ▼
+aotwork/out/classes.jar    post-transform classes (the 230 @SideOnly(CLIENT) ones are dropped)
+aotwork/out/resources.jar  non-class resources + retro/origins.txt
+        │  + glue/         stub RelaunchClassLoader, ModClassLoader, FMLRelauncher, reflective ASMEventHandler,
+        │                  Enums, Origin, and the ServerBoot entry point
+        ▼
+Loadable.java → stubs.py → prune.py → genconfig.py → native-image
 ```
 
-`ServerBoot` does what `FMLRelauncher.relaunchServer` did (real `RelaunchLibraryManager.handleLaunch` for coremod plugin
-setup, then `MinecraftServer.fmlReentry`) but with a stub class loader that registers no transformers, because every
-class was already transformed at build time.
+`ServerBoot` does what `FMLRelauncher.relaunchServer` did: the real `RelaunchLibraryManager.handleLaunch` for coremod
+plugin setup, then `MinecraftServer.fmlReentry`. The class loader is a stub that registers no transformers, because every
+class was transformed at build time.
 
-### Build-time patches (`aot/Patches.java`) and why each exists
-* **Signature check** – `FMLModContainer.constructMod` read `CodeSource` certificates; a closed world has none. Mods are
-  treated as having no declared fingerprint (Railcraft/IC2/Forestry otherwise abort with "Tampering detected").
-* **EnumHelper** – Forge adds enum constants through JDK-internal reflection (dead on JDK 12+, impossible in an image).
-  A recording run (`-Dretro.enums.record`) logs the 25 `addEnum` calls (tool/armor materials from IC2, Thaumcraft,
-  Twilight Forest, Railcraft, CompactSolars, XyCraft, RedPower, Forestry); `enumExtend` bakes them into the enum
-  `<clinit>`, `addEnum` becomes a by-name lookup (n-th match for repeated names), `setup()` is a no-op.
-  `enum-additions.txt` is that recording; redo it if mod configs change enum arguments.
-* **`(T[]) list.toArray()`** – RedPower's `WorldGenMarble` relies on JDK ≤ 8 returning a typed array from
-  `Arrays.asList(..).toArray()`; rewritten to `toArray(new T[0])` (crashed world generation on JDK 9+).
-* **`(RelaunchClassLoader) getClassLoader()` casts** (MiscPeripherals) → stub loader lookup.
-* **`Class.getResource("x.class")` → jar** (MiscPeripherals demo programs) → `retro.glue.Origin` maps back to the jar on disk.
+### Build-time patches (`aot/Patches.java`)
+
+- **Signature check.** `FMLModContainer.constructMod` read `CodeSource` certificates, which a closed world does not have.
+  Mods are treated as having no declared fingerprint (Railcraft, IC2 and Forestry otherwise abort with
+  "Tampering detected").
+- **EnumHelper.** Forge adds enum constants through JDK-internal reflection, which is impossible in an image. A recording
+  run (`-Dretro.enums.record`) logs the `addEnum` calls (25 for this pack: tool and armor materials); `enumExtend` bakes
+  them into the enum initializer, `addEnum` becomes a by-name lookup (the n-th match for repeated names) and `setup()`
+  is a no-op. `enum-additions.txt` is that recording; redo it if mod configs change enum arguments.
+- **`(T[]) list.toArray()`.** RedPower's `WorldGenMarble` relies on Java 8 returning a typed array from
+  `Arrays.asList(..).toArray()`; it is rewritten to `toArray(new T[0])`. It crashed world generation on Java 9 and later.
+- **`(RelaunchClassLoader) getClassLoader()` casts** (MiscPeripherals) are routed to the stub loader.
+- **`Class.getResource("x.class")` to a jar** (MiscPeripherals demo programs) is mapped back to the jar on disk by
+  `retro.glue.Origin`.
 
 ### Native-image specifics
-* Every pack class is registered for reflection (`genconfig.py`): packet registry, entity/tile-entity factories,
-  `@ForgeSubscribe` handlers (reflective `ASMEventHandler`), `@Mod` containers all instantiate/invoke reflectively.
-  The GraalVM tracing agent (`scripts/agentrun.sh`, boot + player session + stop) supplies the JDK/library reflection.
-* The builder aborts on enums whose signatures mention a missing class (`getEnumConstants()`), so `stubs.py` generates
-  empty stubs for missing **vanilla** types only (obfuscated default-package names, `net.minecraft.*`). Mod-package
-  classes stay absent on purpose: mods probe optional integrations (e.g. GregTech) with `Class.forName`.
-* Client-only mods (`reiminimap`, `InvTweaks`) must not be in `mods/` – they crash a dedicated server on stock FML too.
-* Built with `x86-64-v3` (AVX2). Add `-march=compatibility` to `nibuild.sh` for older CPUs.
 
-## Contents of this folder
+- Every pack class is registered for reflection (`genconfig.py`): the packet registry, entity and tile-entity factories,
+  `@ForgeSubscribe` handlers and `@Mod` containers all instantiate or invoke reflectively. The GraalVM tracing agent
+  (`runstage.py agent`, a boot plus a bot session plus a stop) supplies the JDK and library reflection.
+- The builder aborts on enums whose signatures mention a missing class (`getEnumConstants()`), so `stubs.py` generates
+  empty stubs for missing **vanilla** types only (obfuscated default-package names and `net.minecraft.*`). Mod-package
+  classes stay absent on purpose: mods probe optional integrations (GregTech, for instance) with `Class.forName`.
+- Empty stubs are used only for native-image analysis; no optional mod integration is replaced with fake mod classes.
 
-- `aot/`, `glue/`, `Loadable.java`, `stubs.py`, `prune.py`, `genconfig.py`, `enum-additions.txt`: the build sources.
-- `scripts/`: the build, agent-run, benchmark, and test scripts.
-- `pelican/egg-direwolf20-native.json`: the Pelican panel egg.
+## Test tools
 
-Not included: the Direwolf20 pack jars and configs, `base-server.jar`, generated class lists and native-image configs,
-world data, and the native binary. Supply your own Direwolf20 5.3.2 server files to rebuild; the pack's mods are not
-redistributable here.
+- `scripts/Bot.java`: a protocol-51 client with the FML handshake (a fake `Packet1Login` carrying murmur3("FML"), then
+  the mod-list response). With a server log as its sixth argument it echoes the server's spawn teleport and flies
+  along +x at 20 blocks/s, which needs `allow-flight=true`.
+- `scripts/ping.py`: the 0xFE 0x01 list ping.
+- `scripts/hazards.py`, `jarself.py`, `surface.py`: scans of the pack's jars for runtime code generation, jar
+  self-introspection and the amount of Minecraft/Forge API the mods use.
 
-## Re-running
-`scripts/aotbuild.sh` (env `JOPTS="-Dretro.enums.file=..."`), `scripts/buildglue.sh`, `scripts/agentrun.sh`,
-`scripts/nibuild.sh`, `scripts/runnative.sh <dir>`, `scripts/bench.sh base|aot|native <seconds>`.
-Test tools: `scripts/Bot.java` (protocol-51 client with FML handshake; `java -cp guava.jar Bot.java host port name secs fmlLog [serverLog]`),
-`scripts/ping.py`. On a shared build host, never kill by name; `scripts/dwtools.sh` has `mine_pids <cwd>`.
+## Validation scope
+
+The checks verify startup, the Forge mod handshake, RSA/AES login, chunk streaming, server ticking, world saving and
+shutdown. The flight check generates terrain; the stock-world check uses the world produced by the Java 8 baseline.
+They do not exercise every machine, recipe, dimension, turtle program or other mod feature. A compiled image must not be
+presented as an exhaustive gameplay compatibility guarantee. See [`VALIDATION.md`](VALIDATION.md).

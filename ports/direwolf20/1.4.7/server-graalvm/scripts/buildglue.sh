@@ -1,3 +1,7 @@
 #!/bin/bash
-export JAVA_HOME=$(ls -d /root/build1710-tools/jdk8u504*); export PATH=$JAVA_HOME/bin:$PATH
-cd /root/dw20-server/glue; rm -rf bin && mkdir bin && javac -nowarn -source 1.7 -target 1.7 -cp ../aotwork/out/classes.jar -d bin $(find src -name "*.java") 2>&1 | grep -v "^warning\|^Note" | head -20
+set -euo pipefail
+D=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+: "${JDK8_HOME:?Set JDK8_HOME to a JDK 8 installation}"
+mkdir -p "$D/glue/bin"
+"$JDK8_HOME/bin/javac" -nowarn -source 1.7 -target 1.7 \
+  -cp "$D/aotwork/${OUT:-out}/classes.jar" -d "$D/glue/bin" $(find "$D/glue/src" -name '*.java')

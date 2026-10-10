@@ -28,6 +28,16 @@ public class Bot {
         out.flush();
     }
 
+    static boolean matchesLoggedLogin(String logFile, double x, double z) {
+        try {
+            Matcher pm = Pattern.compile("logged in with entity id \\d+ at \\(([-0-9.E]+), ([-0-9.E]+), ([-0-9.E]+)\\)")
+                    .matcher(new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(logFile)), StandardCharsets.UTF_8));
+            boolean found = false, ok = false;
+            while (pm.find()) { found = true; ok |= Math.abs(Double.parseDouble(pm.group(1)) - x) < 1e-6 && Math.abs(Double.parseDouble(pm.group(3)) - z) < 1e-6; }
+            return !found || ok;                              // no login line yet: fall back to the plausibility checks
+        } catch (IOException e) { return true; }
+    }
+
     static int rd() throws IOException {
         int b = in.read();
         if (b < 0) throw new EOFException();
@@ -99,7 +109,8 @@ public class Bot {
                             if (cur[teleScan] != 0x0D) continue;
                             DataInputStream pi = new DataInputStream(new ByteArrayInputStream(cur, teleScan + 1, 41));
                             double x = pi.readDouble(), p1 = pi.readDouble(), p2 = pi.readDouble(), z = pi.readDouble();
-                            if (Math.abs(p1 - p2) > 1.0 && Math.abs(p1 - p2) < 2.5 && Math.abs(x) < 3e7 && Math.abs(z) < 3e7 && p1 > 0 && p1 < 300) {
+                            if (Math.abs(p1 - p2) > 1.0 && Math.abs(p1 - p2) < 2.5 && Math.abs(x) < 3e7 && Math.abs(z) < 3e7 && p1 > 0 && p1 < 300
+                                    && matchesLoggedLogin(a[5], x, z)) {   // the server logged where it put us: ignore look-alikes in chunk data
                                 tele[0] = new double[] { x, p1, p2, z };
                                 System.out.println("server teleport: x=" + x + " a=" + p1 + " b=" + p2 + " z=" + z);
                                 break;
