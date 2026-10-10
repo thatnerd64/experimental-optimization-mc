@@ -1,0 +1,29 @@
+{
+    "_comment": "Direwolf20 1.4.7 - GraalVM native image (draft, not yet imported)",
+    "meta": { "version": "PTDL_v2", "update_url": null },
+    "name": "Direwolf20 1.4.7 (GraalVM native)",
+    "author": "lucaswan348@gmail.com",
+    "description": "FTB Direwolf20 5.3.2 (Minecraft 1.4.7, Forge) server compiled ahead of time with GraalVM native-image. No JVM.",
+    "features": [],
+    "docker_images": { "Debian 12 (yolks)": "ghcr.io/parkervcp/yolks:debian" },
+    "file_denylist": [],
+    "startup": "./dw20-server -Xmx{{HEAP_MB}}M nogui",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"online-mode\": \"{{server.build.env.ONLINE_MODE}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \"For help, type \\\"help\\\"\",\r\n    \"userInteraction\": []\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Fetches the prebuilt bundle (binary + libs + 42 server-side mods + configs) and unpacks it into /mnt/server.\napt-get update -qq && apt-get install -y -qq curl ca-certificates tar >/dev/null\ncd /mnt/server\ncurl -fsSL \"${BUNDLE_URL}\" -o /tmp/bundle.tar.gz\ntar -xzf /tmp/bundle.tar.gz --strip-components=1\nrm -f /tmp/bundle.tar.gz\nchmod +x dw20-server start.sh\nprintf 'online-mode=%s\\nmotd=Direwolf20 (GraalVM native)\\nview-distance=8\\n' \"${ONLINE_MODE}\" > server.properties\necho done",
+            "container": "debian:bookworm-slim",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        { "name": "Bundle URL", "description": "Where the install script downloads dw20-native.tar.gz from.", "env_variable": "BUNDLE_URL", "default_value": "", "user_viewable": false, "user_editable": false, "rules": "required|string", "field_type": "text" },
+        { "name": "Heap (MB)", "description": "-Xmx for the native image. Keep it below the server memory limit (about 75%).", "env_variable": "HEAP_MB", "default_value": "3072", "user_viewable": true, "user_editable": true, "rules": "required|numeric|min:512", "field_type": "text" },
+        { "name": "Online mode", "description": "true = verify accounts with Mojang (1.4.7 auth is long gone, so test servers use false).", "env_variable": "ONLINE_MODE", "default_value": "false", "user_viewable": true, "user_editable": true, "rules": "required|in:true,false", "field_type": "text" }
+    ]
+}

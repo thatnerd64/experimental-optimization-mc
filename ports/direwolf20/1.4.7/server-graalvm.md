@@ -7,7 +7,7 @@
 | Target | dedicated server, native Linux x86_64 |
 | Engine | GraalVM 21.0.12 native-image, `-O2`, x86-64-v3 |
 | Status | Working, deployed |
-| Source | Local only at the time of writing (`~/dw20-port/server`). Not yet in version control. |
+| Source | This repo, [`server-graalvm/`](server-graalvm/) (sources, scripts, Pelican egg) |
 | Live | graalvm.baconmc.net (Pelican egg 5, "Direwolf20 1.4.7 (GraalVM native)") |
 
 ## What it is
@@ -49,8 +49,6 @@ Deployed on a Pelican panel with a 2 GB limit: about 310–330 MB in use, "Done"
 
 - Multi-hour soak test not done.
 - Per-mod gameplay, multiple players, and long-uptime CPU are not measured.
-- Sources are not in version control yet. Add them to this repo or a sibling before
-  anything else changes.
 - Client-only mods must stay out of the server set. A few mod types need stubs for
   native-image.
 - Several Forge and mod workarounds are required: Forge `EnumHelper` constants are
@@ -59,4 +57,4 @@ Deployed on a Pelican panel with a 2 GB limit: about 310–330 MB in use, "Done"
 
 ## Related
 
-- Server-only catalog; client ports are tracked elsewhere.
+- Build and run instructions: [`server-graalvm/README.md`](server-graalvm/README.md).
