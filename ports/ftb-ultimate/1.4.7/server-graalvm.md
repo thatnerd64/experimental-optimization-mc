@@ -20,6 +20,16 @@ the mod set requires rebuilding.
 
 ## Download and run
 
+The quickest way is the repo's installer, which downloads the bundle, checks its checksum and unpacks it:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/thatnerd64/experimental-optimization-mc/main/install.sh | sh -s -- ftb-ultimate
+cd ftb-ultimate-server && ./start.sh
+```
+
+On a Pelican panel, use the [shared egg](../../../pelican/egg-graalvm-native-1.4.7.json) with Modpack set to `ftb-ultimate`.
+To install by hand instead:
+
 Download the [compiled bundle](https://github.com/thatnerd64/experimental-optimization-mc/releases/download/ftb-ultimate-1.1.2-graalvm-v1/ultimate-native-linux-x86_64.tar.gz)
 and [SHA-256 checksum](https://github.com/thatnerd64/experimental-optimization-mc/releases/download/ftb-ultimate-1.1.2-graalvm-v1/ultimate-native-linux-x86_64.tar.gz.sha256), then:
 

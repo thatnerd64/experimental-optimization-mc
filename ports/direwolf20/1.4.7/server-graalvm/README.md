@@ -15,7 +15,9 @@ A precompiled Linux x86_64 bundle and checksum are attached to the
 [GitHub Release](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/direwolf20-5.3.2-graalvm-v1).
 See the [port card](../server-graalvm.md#download-and-run) for installation and
 [`RUNTIME.md`](RUNTIME.md) for launch details. [`pelican/egg-direwolf20-native.json`](pelican/egg-direwolf20-native.json)
-is the Pelican egg the deployed server uses; it installs that release bundle.
+is the Pelican egg the deployed server uses; it installs that release bundle. New panels can use the
+[shared egg](../../../../pelican/egg-graalvm-native-1.4.7.json), which installs either port through the repo's
+[`install.sh`](../../../../install.sh).
 
 ## Inputs and tools
 
