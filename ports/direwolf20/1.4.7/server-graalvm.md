@@ -59,5 +59,4 @@ Deployed on a Pelican panel with a 2 GB limit: about 310–330 MB in use, "Done"
 
 ## Related
 
-- [client-teavm](../../direwolf20/1.4.7/client-teavm.md): the client port of the same pack.
-- [ftb-infinity-evolved client-teavm](../../ftb-infinity-evolved/1.7.10/client-teavm.md): same AOT approach on Forge 1.7.10.
+- Server-only catalog; client ports are tracked elsewhere.

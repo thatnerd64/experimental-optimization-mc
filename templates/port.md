@@ -4,7 +4,7 @@
 |---|---|
 | Modpack | <name and version> |
 | Minecraft / loader | <version / loader version> |
-| Target | client or server, and platform |
+| Target | server, and platform |
 | Engine | <TeaVM / GraalVM / CheerpJ / ...> |
 | Status | <Live / Playable / Working, deployed / Experimental / In progress / Research / Tuned> |
 | Source | <repo URL>, branch `<branch>`, path `<path>` |
