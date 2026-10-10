@@ -12,6 +12,7 @@ credentials.
 | Modpack | Minecraft / loader | Engine | Status | Card |
 |---|---|---|---|---|
 | Direwolf20 | 1.4.7 / Forge 6.6.2 | GraalVM native image | Working, deployed | [card](ports/direwolf20/1.4.7/server-graalvm.md) · [source](ports/direwolf20/1.4.7/server-graalvm/) |
+| FTB Ultimate 1.1.2 | 1.4.7 / Forge 6.6.2 | GraalVM native image | Working | [card](ports/ftb-ultimate/1.4.7/server-graalvm.md) · [source](ports/ftb-ultimate/1.4.7/server-graalvm/) |
 
 ## Layout
 
