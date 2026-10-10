@@ -3,8 +3,8 @@
 Index of optimized server ports of popular Minecraft modpacks: the same pack's
 dedicated server rebuilt on another runtime for lower memory use and faster boot.
 
-This repo holds the catalog only. Each port's code lives in its own home, linked
-from its card. The repo contains no game assets, server packs, world data, or
+Each port has a card with its status and build notes, and its source is kept in this repo
+alongside the card. The repo contains no game assets, server packs, world data, or
 credentials.
 
 ## Ports
