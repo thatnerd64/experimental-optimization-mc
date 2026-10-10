@@ -6,8 +6,9 @@
 | Minecraft / loader | <version / loader version> |
 | Target | server, and platform |
 | Engine | <TeaVM / GraalVM / CheerpJ / ...> |
-| Status | <Live / Playable / Working, deployed / Experimental / In progress / Research / Tuned> |
-| Source | <repo URL>, branch `<branch>`, path `<path>` |
+| Status | <Working, deployed / Working / Experimental / In progress> |
+| Source | This repo, branch `main`, [`server-<engine>/`](server-<engine>/) |
+| Bundle | <GitHub Release link, or "none"> |
 | Live | <public URL, or "none"> |
 
 ## What it is
