@@ -8,6 +8,7 @@
 | Engine | Oracle GraalVM 21.0.12 native-image, `-O2`, `-march=compatibility` |
 | Status | Working |
 | Source | This repo, branch `main`, [`server-graalvm/`](server-graalvm/) |
+| Bundle | [Linux x86_64 native runtime](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/ftb-ultimate-1.1.2-graalvm-v1) |
 | Live | none |
 
 ## What it is
@@ -16,6 +17,23 @@ The original Ultimate dedicated server compiled into a native executable, adapte
 from the Direwolf20 1.4.7 port. No Java installation or Forge server jar is required
 at runtime. Mod jars remain on disk for Forge discovery and resources; changing
 the mod set requires rebuilding.
+
+## Download and run
+
+Download the [compiled bundle](https://github.com/thatnerd64/experimental-optimization-mc/releases/download/ftb-ultimate-1.1.2-graalvm-v1/ultimate-native-linux-x86_64.tar.gz)
+and [SHA-256 checksum](https://github.com/thatnerd64/experimental-optimization-mc/releases/download/ftb-ultimate-1.1.2-graalvm-v1/ultimate-native-linux-x86_64.tar.gz.sha256), then:
+
+```sh
+sha256sum -c ultimate-native-linux-x86_64.tar.gz.sha256
+tar -xzf ultimate-native-linux-x86_64.tar.gz
+cd ultimate-native
+./start.sh
+```
+
+Keep the bundled directories and shared libraries. The runtime defaults to
+port 25565, `online-mode=true`, and a 4 GB heap limit. Read the
+[runtime instructions](server-graalvm/RUNTIME.md) and
+[validation limits](server-graalvm/VALIDATION.md) before using an existing world.
 
 ## Build
 

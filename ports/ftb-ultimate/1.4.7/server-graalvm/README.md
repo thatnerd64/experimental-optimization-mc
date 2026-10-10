@@ -7,6 +7,10 @@ The build uses a copied pack; keep the installed client instance intact.
 Run commands below from this source directory. Scripts locate the workspace
 relative to their own location and use `JDK8_HOME` and `GRAALVM_HOME` for tools.
 
+A precompiled Linux x86_64 bundle and checksum are available in the
+[GitHub Release](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/ftb-ultimate-1.1.2-graalvm-v1).
+See the [port card](../server-graalvm.md#download-and-run) for installation.
+
 ## Inputs and tools
 
 - Original FTB Ultimate 1.1.2 `mods/`, `coremods/`, `lib/`, `config/`.

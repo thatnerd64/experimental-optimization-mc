@@ -4,15 +4,16 @@ Index of optimized server ports of popular Minecraft modpacks: the same pack's
 dedicated server rebuilt on another runtime for lower memory use and faster boot.
 
 Each port has a card with its status and build notes, and its source is kept in this repo
-alongside the card. The repo contains no game assets, server packs, world data, or
-credentials.
+alongside the card. The Git tree contains no game assets, server packs, world data,
+or credentials. Compiled bundles, where available, are attached to GitHub Releases
+and linked from the port cards.
 
 ## Ports
 
 | Modpack | Minecraft / loader | Engine | Status | Card |
 |---|---|---|---|---|
 | Direwolf20 | 1.4.7 / Forge 6.6.2 | GraalVM native image | Working, deployed | [card](ports/direwolf20/1.4.7/server-graalvm.md) · [source](ports/direwolf20/1.4.7/server-graalvm/) |
-| FTB Ultimate 1.1.2 | 1.4.7 / Forge 6.6.2 | GraalVM native image | Working | [card](ports/ftb-ultimate/1.4.7/server-graalvm.md) · [source](ports/ftb-ultimate/1.4.7/server-graalvm/) |
+| FTB Ultimate 1.1.2 | 1.4.7 / Forge 6.6.2 | GraalVM native image | Working | [card](ports/ftb-ultimate/1.4.7/server-graalvm.md) · [source](ports/ftb-ultimate/1.4.7/server-graalvm/) · [download](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/ftb-ultimate-1.1.2-graalvm-v1) |
 
 ## Layout
 
