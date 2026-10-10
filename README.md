@@ -22,6 +22,7 @@ ports/
   <modpack-slug>/
     <mc-version>/
       server-<engine>.md     one card per server port
+      server-<engine>/       that port's sources, build scripts and docs
 templates/
   port.md                    copy this for a new card
 ```
@@ -40,7 +41,9 @@ templates/
 ## Adding a port
 
 1. Copy `templates/port.md` to `ports/<modpack>/<mc-version>/server-<engine>.md`.
-2. Fill in the table at the top and link the code's home repo and branch.
-3. Add the row to the Ports table above.
-4. Never commit game assets, server packs, world saves, account data, IP addresses,
+2. Put the port's sources in `ports/<modpack>/<mc-version>/server-<engine>/` and fill in the
+   table at the top of the card.
+3. Attach any compiled bundle to a GitHub Release and link it from the card.
+4. Add the row to the Ports table above.
+5. Never commit game assets, server packs, world saves, account data, IP addresses,
    hostnames of private machines, or credentials.

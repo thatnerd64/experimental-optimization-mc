@@ -14,7 +14,8 @@ Run commands below from this source directory. Scripts locate the workspace rela
 A precompiled Linux x86_64 bundle and checksum are attached to the
 [GitHub Release](https://github.com/thatnerd64/experimental-optimization-mc/releases/tag/direwolf20-5.3.2-graalvm-v1).
 See the [port card](../server-graalvm.md#download-and-run) for installation and
-[`RUNTIME.md`](RUNTIME.md) for launch details.
+[`RUNTIME.md`](RUNTIME.md) for launch details. [`pelican/egg-direwolf20-native.json`](pelican/egg-direwolf20-native.json)
+is the Pelican egg the deployed server uses; it installs that release bundle.
 
 ## Inputs and tools
 

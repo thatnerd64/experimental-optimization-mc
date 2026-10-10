@@ -1,5 +1,5 @@
 {
-    "_comment": "Direwolf20 1.4.7 - GraalVM native image (draft, not yet imported)",
+    "_comment": "Direwolf20 1.4.7 - GraalVM native image (imported and deployed on Pelican)",
     "meta": { "version": "PTDL_v2", "update_url": null },
     "name": "Direwolf20 1.4.7 (GraalVM native)",
     "author": "thatnerd64",
@@ -22,7 +22,7 @@
         }
     },
     "variables": [
-        { "name": "Bundle URL", "description": "Where the install script downloads dw20-native.tar.gz from.", "env_variable": "BUNDLE_URL", "default_value": "", "user_viewable": false, "user_editable": false, "rules": "required|string", "field_type": "text" },
+        { "name": "Bundle URL", "description": "Where the install script downloads dw20-native-linux-x86_64.tar.gz from.", "env_variable": "BUNDLE_URL", "default_value": "https://github.com/thatnerd64/experimental-optimization-mc/releases/download/direwolf20-5.3.2-graalvm-v1/dw20-native-linux-x86_64.tar.gz", "user_viewable": false, "user_editable": false, "rules": "required|string", "field_type": "text" },
         { "name": "Heap (MB)", "description": "-Xmx for the native image. Keep it below the server memory limit (about 75%).", "env_variable": "HEAP_MB", "default_value": "3072", "user_viewable": true, "user_editable": true, "rules": "required|numeric|min:512", "field_type": "text" },
         { "name": "Online mode", "description": "true = verify accounts with Mojang (1.4.7 auth is long gone, so test servers use false).", "env_variable": "ONLINE_MODE", "default_value": "false", "user_viewable": true, "user_editable": true, "rules": "required|in:true,false", "field_type": "text" }
     ]
